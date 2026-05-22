@@ -17,3 +17,7 @@ build/
 
 # Logs
 *.log
+
+# Conda
+.conda/
+*.conda
