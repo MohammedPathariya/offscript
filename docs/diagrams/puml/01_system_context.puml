@@ -1,0 +1,63 @@
+@startuml 01_system_context
+!theme plain
+skinparam linetype ortho
+skinparam ranksep 100
+skinparam nodesep 80
+skinparam defaultFontSize 13
+skinparam padding 6
+
+skinparam rectangle {
+    BackgroundColor White
+    BorderColor #333333
+    RoundCorner 6
+}
+
+skinparam database {
+    BackgroundColor White
+    BorderColor #333333
+}
+
+skinparam cloud {
+    BackgroundColor White
+    BorderColor #333333
+}
+
+skinparam actor {
+    BackgroundColor White
+    BorderColor #333333
+}
+
+title OffScript: System Context
+
+top to bottom direction
+
+actor "User" as user
+
+rectangle "OffScript System" as offscript {
+    rectangle "Web Interface" as frontend
+    rectangle "Counterfactual Agent" as agent
+    rectangle "Observability Layer" as observability
+    database "Knowledge Graph" as kg
+    rectangle "Data Pipeline" as pipeline
+}
+
+cloud "Gemini API" as gemini
+cloud "Arize Phoenix Cloud" as phoenixcloud
+cloud "API-Football" as apifootball
+cloud "football-data.org" as footballdata
+cloud "Wikipedia API" as wikipedia
+
+user --> frontend : premise
+frontend --> user : timeline
+frontend --> agent : request
+agent --> kg : query
+agent --> gemini : reasoning
+agent --> observability : traces
+observability --> agent : MCP
+observability --> phoenixcloud : streams
+pipeline --> apifootball : matches
+pipeline --> footballdata : validation
+pipeline --> wikipedia : managers
+pipeline --> kg : populate
+
+@enduml
