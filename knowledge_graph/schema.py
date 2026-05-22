@@ -48,6 +48,11 @@ class TransferType(str, Enum):
     FEE = "fee"
     FREE = "free"
     LOAN = "loan"
+    
+class ReasoningMode(str, Enum):
+    GROUNDED = "grounded"
+    SPECULATIVE = "speculative"
+    CREATIVE = "creative"
 
 
 # ---------------------------------------------------------------------------
