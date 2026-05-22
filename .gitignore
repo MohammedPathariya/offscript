@@ -21,3 +21,4 @@ build/
 # Conda
 .conda/
 *.conda
+out/
