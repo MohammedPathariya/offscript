@@ -1,0 +1,64 @@
+@startuml 05_agent_reasoning_loop
+!theme plain
+skinparam ranksep 100
+skinparam nodesep 80
+skinparam defaultFontSize 13
+skinparam padding 6
+
+skinparam activity {
+    BackgroundColor White
+    BorderColor #333333
+    ArrowColor #333333
+    DiamondBackgroundColor White
+    DiamondBorderColor #333333
+}
+
+title OffScript: Agent Reasoning Loop
+
+start
+
+:User submits what-if premise;
+
+:Premise Parser queries\nKnowledge Graph for divergence point;
+
+if (Divergence point found?) then (no)
+    :Request clarification from user;
+    stop
+else (yes)
+    :Pass divergence node\nto Timeline Generator;
+endif
+
+repeat
+    :Timeline Generator proposes\nnext timeline step via Gemini;
+    :Log reasoning request to Arize;
+
+    :Consistency Checker queries\ncausal edges and constraints;
+    :Log consistency check to Arize;
+
+    if (Step consistent with\nknowledge graph?) then (no)
+        :Log violation details to Arize;
+        :Inject violation context\ninto next generation prompt;
+        :Backtrack to Timeline Generator;
+    else (yes)
+        :Commit timeline step;
+    endif
+
+repeat while (More steps needed?) is (yes)
+-> no;
+
+:All steps confirmed;
+:Render visual branching timeline;
+:Return timeline to user;
+
+stop
+
+note right
+    Arize traces every step:
+    - reasoning requests
+    - consistency check results
+    - violations and backtracks
+    - confidence per step
+    - MCP self-introspection
+end note
+
+@enduml

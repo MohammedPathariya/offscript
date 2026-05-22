@@ -1,0 +1,117 @@
+@startuml 04_knowledge_graph_schema
+!theme plain
+skinparam linetype ortho
+skinparam ranksep 120
+skinparam nodesep 100
+skinparam defaultFontSize 13
+skinparam padding 6
+
+skinparam class {
+    BackgroundColor White
+    BorderColor #333333
+    ArrowColor #333333
+}
+
+title OffScript: Knowledge Graph Schema
+
+top to bottom direction
+
+class Player {
+    + name: String
+    + nationality: String
+    + date_of_birth: Date
+    + position: String
+    + international_caps: Integer
+    + international_goals: Integer
+    + major_honors: List
+    + peak_rating_period: String
+}
+
+class Manager {
+    + name: String
+    + nationality: String
+    + date_of_birth: Date
+    + tactical_style: String
+    + management_timeline: List
+    + notable_decisions: List
+    + major_honors: List
+}
+
+class NationalTeam {
+    + nation: String
+    + fifa_ranking: Integer
+    + typical_formation: String
+    + playing_style: String
+    + historical_wc_results: List
+}
+
+class ClubTeam {
+    + club_name: String
+    + league: String
+    + country: String
+    + ucl_results_2018_2023: List
+    + key_players_per_season: List
+}
+
+class Tournament {
+    + name: String
+    + year: Integer
+    + host_nation: String
+    + winner: String
+    + runner_up: String
+    + top_scorer: String
+    + golden_ball_winner: String
+}
+
+class Match {
+    + tournament: String
+    + stage: String
+    + date: Date
+    + team_a: String
+    + team_b: String
+    + score: String
+    + scorers: List
+    + key_moments: List
+}
+
+class CareerEvent {
+    + player: String
+    + event_type: String
+    + date: Date
+    + from_entity: String
+    + to_entity: String
+    + impact_rating: String
+}
+
+class CausalEdge {
+    + from_node: String
+    + to_node: String
+    + causal_strength: Enum
+    + consequence_type: String
+    + reasoning: String
+}
+
+Player "many" --> "many" Match : PLAYED_IN
+Player "many" --> "many" ClubTeam : TRANSFERRED_TO
+Player "many" --> "many" Tournament : COMPETED_IN
+Player "1" --> "many" CareerEvent : HAS_EVENT
+Manager "1" --> "many" NationalTeam : MANAGED_BY
+Manager "1" --> "many" ClubTeam : MANAGED_BY
+Manager "1" --> "many" Player : SELECTED
+NationalTeam "many" --> "many" Tournament : PARTICIPATED_IN
+NationalTeam "1" --> "many" Match : PLAYED
+ClubTeam "1" --> "many" Match : PLAYED
+Tournament "1" --> "many" Match : CONTAINS
+Match "1" --> "many" CausalEdge : CAUSED
+Player "1" --> "many" CausalEdge : CAUSED
+Tournament "1" --> "many" CausalEdge : CAUSED
+Manager "1" --> "many" CausalEdge : CAUSED
+
+note right of CausalEdge
+    causal_strength values:
+    HIGH - consequence almost certain
+    MEDIUM - consequence likely
+    LOW - consequence speculative
+end note
+
+@enduml

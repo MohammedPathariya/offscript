@@ -1,0 +1,91 @@
+@startuml 03_data_flow
+!theme plain
+skinparam linetype ortho
+skinparam ranksep 100
+skinparam nodesep 80
+skinparam defaultFontSize 13
+skinparam padding 6
+
+skinparam rectangle {
+    BackgroundColor White
+    BorderColor #333333
+    RoundCorner 6
+}
+
+skinparam database {
+    BackgroundColor White
+    BorderColor #333333
+}
+
+skinparam cloud {
+    BackgroundColor White
+    BorderColor #333333
+}
+
+skinparam arrow {
+    Color #333333
+}
+
+title OffScript: Data Flow
+
+top to bottom direction
+
+rectangle "PHASE 1: Setup (runs once)" as phase1 {
+    cloud "API-Football" as apifootball
+    cloud "football-data.org" as footballdata
+    cloud "Wikipedia API" as wikipedia
+
+    rectangle "Fetch Layer" as fetch {
+        rectangle "Match, Player\nClub, Tournament\nData" as structured
+        rectangle "Manager\nTenure Data" as managers
+    }
+
+    rectangle "Validation Layer" as validationlayer {
+        rectangle "Cross-Validate\nOverlapping Records" as crossval
+        rectangle "Flag\nDiscrepancies" as flag
+        rectangle "Pass Validated\nRecords" as passval
+    }
+
+    database "MongoDB\nKnowledge Graph" as mongo
+}
+
+rectangle "PHASE 2: Runtime (every request)" as phase2 {
+    actor "User" as user
+    rectangle "Web Interface" as frontend
+
+    rectangle "Agent Layer" as agentlayer {
+        rectangle "Premise Parser" as pp
+        rectangle "Timeline Generator" as tg
+        rectangle "Consistency Checker" as cc
+    }
+
+    rectangle "NetworkX\nGraph" as nx
+    rectangle "Arize Phoenix\nTracer" as tracer
+    rectangle "Visual Timeline\nOutput" as output
+}
+
+apifootball --> structured : raw match\nplayer club data
+wikipedia --> managers : raw manager\ntenure data
+structured --> crossval : structured records
+footballdata --> crossval : validation records
+crossval --> flag : discrepancies
+crossval --> passval : clean records
+passval --> mongo : validated nodes\nand edges
+managers --> mongo : manager nodes
+
+mongo --> nx : load graph\nat startup
+
+user --> frontend : what-if premise
+frontend --> pp : parsed request
+pp --> nx : find divergence point
+pp --> tg : divergence node
+tg --> nx : query causal edges
+tg --> cc : proposed timeline step
+cc --> nx : check consistency
+cc --> tg : pass or backtrack
+cc --> tracer : log violation
+tg --> output : confirmed step
+output --> frontend : complete timeline
+frontend --> user : visual timeline
+
+@enduml
