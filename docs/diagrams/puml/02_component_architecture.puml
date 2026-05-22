@@ -1,0 +1,108 @@
+@startuml 02_component_architecture
+!theme plain
+skinparam linetype ortho
+skinparam ranksep 100
+skinparam nodesep 80
+skinparam defaultFontSize 13
+skinparam padding 6
+
+skinparam rectangle {
+    BackgroundColor White
+    BorderColor #333333
+    RoundCorner 6
+}
+
+skinparam database {
+    BackgroundColor White
+    BorderColor #333333
+}
+
+skinparam cloud {
+    BackgroundColor White
+    BorderColor #333333
+}
+
+title OffScript: Component Architecture
+
+top to bottom direction
+
+cloud "API-Football\n(100 req/day)" as apifootball
+cloud "football-data.org\n(10 req/min)" as footballdata
+cloud "Wikipedia API\n(unlimited)" as wikipedia
+cloud "Gemini API" as gemini
+cloud "Arize Phoenix\nCloud" as phoenix
+
+rectangle "Data Pipeline" as dp_outer {
+    together {
+        rectangle "fetch_matches" as fm
+        rectangle "fetch_players" as fp
+        rectangle "fetch_clubs" as fc
+        rectangle "fetch_tournaments" as ft
+    }
+    rectangle "fetch_managers" as fmgr
+    rectangle "validate\n(rate-aware)" as val
+    rectangle "load_mongodb" as lm
+}
+
+rectangle "Knowledge Graph" as kg_outer {
+    rectangle "Schema Definitions" as schema
+    database "MongoDB\nNode Store" as mongo
+    rectangle "NetworkX\nGraph Builder" as nx
+    rectangle "Causal Edge\nRegistry" as causal
+    rectangle "Graph Queries" as gq
+}
+
+rectangle "Counterfactual Agent" as agent_outer {
+    rectangle "Premise Parser" as pp
+    rectangle "Timeline Generator" as tg
+    rectangle "Consistency Checker" as cc
+    rectangle "Prompt Templates" as pt
+}
+
+rectangle "Observability Layer" as obs_outer {
+    rectangle "Arize Tracer" as tracer
+    rectangle "LLM Evaluator" as evaluator
+}
+
+rectangle "Web Interface" as web_outer {
+    rectangle "Flask App" as flask
+    rectangle "Timeline Renderer" as renderer
+}
+
+fm --> apifootball : fetch
+fp --> apifootball : fetch
+fc --> apifootball : fetch
+ft --> apifootball : fetch
+fmgr --> wikipedia : fetch
+
+fm --> val : raw data
+fp --> val : raw data
+fc --> val : raw data
+ft --> val : raw data
+val --> footballdata : cross-validate
+val --> lm : validated records
+fmgr --> lm : manager records
+lm --> mongo : load nodes and edges
+
+schema --> mongo : defines structure
+mongo --> nx : loads graph
+nx --> gq : traversal
+causal --> gq : edge lookup
+
+pp --> gq : find divergence
+pp --> pt : load template
+tg --> gemini : reasoning
+tg --> cc : validate step
+tg --> pt : load template
+cc --> gq : check consistency
+cc --> tracer : log violation
+
+tracer --> phoenix : stream traces
+evaluator --> phoenix : stream evals
+phoenix --> tg : MCP introspection
+
+flask --> pp : submit premise
+flask --> tg : generate timeline
+flask --> renderer : pass timeline data
+
+@enduml
