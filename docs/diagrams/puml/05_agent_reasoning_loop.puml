@@ -18,6 +18,17 @@ title OffScript: Agent Reasoning Loop
 start
 
 :User submits what-if premise;
+:User selects reasoning flavor\nGrounded / Speculative / Creative;
+
+if (Flavor is Grounded?) then (yes)
+    :Enforcement: HARD\nCausal edges required\nBacktracking mandatory;
+else (no)
+    if (Flavor is Speculative?) then (yes)
+        :Enforcement: ADVISORY\nCausal edges preferred\nBacktracking optional;
+    else (no)
+        :Enforcement: OBSERVE\nCausal edges ignored\nBacktracking never;
+    endif
+endif
 
 :Premise Parser queries\nKnowledge Graph for divergence point;
 
@@ -25,40 +36,52 @@ if (Divergence point found?) then (no)
     :Request clarification from user;
     stop
 else (yes)
-    :Pass divergence node\nto Timeline Generator;
+    :Pass divergence node and\nenforcement level to Timeline Generator;
 endif
 
 repeat
     :Timeline Generator proposes\nnext timeline step via Gemini;
-    :Log reasoning request to Arize;
+    :Log reasoning request to Arize\nwith flavor and enforcement level;
 
-    :Consistency Checker queries\ncausal edges and constraints;
+    :Consistency Checker evaluates step\nagainst knowledge graph;
     :Log consistency check to Arize;
 
-    if (Step consistent with\nknowledge graph?) then (no)
-        :Log violation details to Arize;
-        :Inject violation context\ninto next generation prompt;
-        :Backtrack to Timeline Generator;
-    else (yes)
+    if (Step consistent?) then (yes)
         :Commit timeline step;
+    else (no)
+        if (Enforcement is HARD?) then (yes)
+            :Log violation to Arize;
+            :Inject violation context\ninto next prompt;
+            :Backtrack to Timeline Generator;
+        else (no)
+            if (Enforcement is ADVISORY?) then (yes)
+                :Log advisory flag to Arize;
+                :Commit with speculative\ndeviation marker;
+            else (no)
+                :Log creative deviation to Arize;
+                :Commit with creative\ndeviation marker;
+            endif
+        endif
     endif
 
 repeat while (More steps needed?) is (yes)
 -> no;
 
 :All steps confirmed;
-:Render visual branching timeline;
+:Render visual branching timeline\nwith deviation markers visible;
 :Return timeline to user;
 
 stop
 
 note right
     Arize traces every step:
-    - reasoning requests
-    - consistency check results
+    - reasoning flavor selected
+    - enforcement level applied
+    - causal edge hits and misses
     - violations and backtracks
+    - speculative deviations
+    - creative deviations
     - confidence per step
-    - MCP self-introspection
 end note
 
 @enduml
