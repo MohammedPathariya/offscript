@@ -78,6 +78,8 @@ Second, full observability. Arize Phoenix traces every reasoning request, every 
 
 Third, defensive clarification. If the user's premise does not map to any divergence point in the knowledge graph, the system requests clarification rather than hallucinating a divergence. This prevents the agent from generating plausible-sounding but groundless timelines.
 
+Fourth, three reasoning flavors. The system supports Grounded, Speculative, and Creative modes selected by the user before generation begins. Grounded mode enforces hard constraints — every step must be supported by a causal edge, violations trigger mandatory backtracking. Speculative mode runs the consistency checker in advisory mode — causal edges are preferred but creative extensions are allowed and flagged. Creative mode observes only — Gemini reasons freely, the consistency checker logs deviations without blocking anything. All three modes produce full Arize traces, enabling comparative analysis across flavors for the same premise.
+
 ---
 
 ## 6. Design Decisions
